@@ -8,12 +8,54 @@ It's currently supported on windows via cygwin (since it's a bash script).
 
 Interface
 ---------
-I'm way too lazy to type this all up again since I just finished the `--help`
-option, so it's going to stay blank until I'm motivated to finish it.
+Output from `--help`:
 
 ```bash
-# print out all options
-cl --help
+runcl (0.0.1)
+
+Usage:
+  cl [options] [lispfile]
+
+Options:
+  -h, --help         : Print this help
+  -v, --version      : Print runcl version
+  --clversion        : Run --version against the default CL
+  -n, --norc         : Skip loading of user rc file
+  -r, --rc <file>    : Load a specific RC file. Not portable
+  -b, --batch        : Run in batch mode (quit after processing)
+  -i, --image <file> : Load a lisp image file
+  --heap <bytes>     : Set lisp heap size
+  --stack <bytes>    : Set lisp stack size
+  -e, --eval <form>  : Eval a form (can be called multiple times)
+  --no-rlwrap        : Turn off readline wrapper (on by default)
+  -c, --impl <lisp>  : Specify a desired lisp type to load.
+
+    Allowed implementations (ever-growing):
+      sbcl ccl ccl64 clisp ecl
+
+~/.runcl variables:
+  preferred  : Preferred lisp(s). Loaded in the given order.
+      Can be on or more of: sbcl ccl ccl64 clisp ecl
+  CFG_RC     : If "0", will skip loading the rc file. Otherwise
+               it will be loaded by default.
+  CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
+  CFG_IMAGE  : Image file to load by default.
+  CFG_HEAP   : Default heap size (bytes).
+  CFG_STACK  : Default stack size (bytes).
+  CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will
+               start normally.
+
+example ~/.runcl
+
+  preferred=ccl64
+  CFG_RLWRAP=
+
+
+Notes:
+ - any parameters after [lispfile] will be ignored (but printed out
+   for your viewing/debugging pleasure)
+ - if the "rlwrap" program exists in your path, it will be used to
+   load the lisp unless --no-rlwrap is given
 ```
 
 Examples
@@ -52,7 +94,7 @@ bash:
 	CFG_RLWRAP=
 
 This says "my preferred implementation is CCL 64-bit, and don't use the `rlwrap`
-command when starting.
+command when starting."
 
 Implementations
 ---------------
