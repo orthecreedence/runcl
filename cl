@@ -1,10 +1,23 @@
 #!/bin/bash
 
+# runcl
+# 
+# This is a script that attempts to provide a common interface for different
+# lisp implementations on the command line. The idea is that no matter what
+# lisp(s) you have installed, you have one script that provides a common
+# interface to starting/running them.
+# 
+# It also support user-defined configuration via the ~/.runcl file.
+# 
+# Homepage: https://github.com/orthecreedence/runcl
+# Author:   Andrew Lyon
+# License:  MIT
+
 version=0.0.1
 
 default_locations="/bin:/usr/bin:/usr/local/bin:/opt/bin"
 
-# TODO: allegro, lispworks, abcl, acl
+# TODO: allegro, lispworks, abcl
 allowed_implementations="sbcl ccl ccl64 clisp ecl"
 
 sbcl_locations="/usr/local/sbcl:/opt/sbcl"
@@ -45,6 +58,60 @@ fi
 CFG_LOAD=
 CFG_EVAL=()
 CFG_VERSION=
+
+print_version() {
+	echo
+	echo "runcl ($version)"
+}
+
+print_help() {
+	print_version
+
+	echo
+	echo "Usage:"
+	echo "  cl [options] [lispfile]"
+	echo
+	echo "Options:"
+	echo "  -h, --help         : Print this help"
+	echo "  -v, --version      : Print runcl version"
+	echo "  --clversion        : Run --version against the default CL"
+	echo "  -n, --norc         : Skip loading of user rc file"
+	echo "  -r, --rc <file>    : Load a specific RC file. Not portable"
+	echo "  -b, --batch        : Run in batch mode (quit after processing)" 
+	echo "  -i, --image <file> : Load a lisp image file"
+	echo "  --heap <bytes>     : Set lisp heap size"
+	echo "  --stack <bytes>    : Set lisp stack size"
+	echo "  -e, --eval <form>  : Eval a form (can be called multiple times)"
+	echo "  --no-rlwrap        : Turn off readline wrapper (on by default)"
+	echo "  -c, --impl <lisp>  : Specify a desired lisp type to load."
+	echo
+	echo "    Allowed implementations (ever-growing):"
+	echo "      $allowed_implementations"
+	echo
+	echo "~/.runcl variables:"
+	echo "  preferred  : Preferred lisp to load. Can be one of:"
+	echo "               $allowed_implementations"
+	echo "  CFG_RC     : If \"0\", will skip loading the rc file. Otherwise"
+	echo "               it will be loaded by default."
+	echo "  CFG_BATCH  : Default cl to batch mode (quit after running, no repl)."
+	echo "  CFG_IMAGE  : Image file to load by default."
+	echo "  CFG_HEAP   : Default heap size (bytes)."
+	echo "  CFG_STACK  : Default stack size (bytes)."
+	echo "  CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will"
+	echo "               start normally."
+	echo
+	echo "example ~/.runcl"
+	echo
+	echo "  preferred=ccl64"
+	echo "  CFG_RLWRAP="
+	echo 
+	echo
+	echo "Notes:"
+	echo " - any parameters after [lispfile] will be ignored (but printed out"
+	echo "   for your viewing/debugging pleasure)"
+	echo " - if the \"rlwrap\" program exists in your path, it will be used to"
+	echo "   load the lisp unless --no-rlwrap is given"
+}
 
 build_option() {
 	directive=$1
@@ -116,10 +183,12 @@ clisp_options() {
 		OPTIONS="$OPTIONS -norc "
 	fi
 	OPTIONS="$OPTIONS `build_option --version \"$CFG_VERSION\" ignore`"
+	if [ "$CFG_BATCH" == "1" ]; then
+		CFG_EVAL[${#CFG_EVAL[@]}]='(quit)'
+	fi
 	for EVAL in "${CFG_EVAL[@]}"; do
 		OPTIONS="$OPTIONS `build_option -x \"$EVAL\"`"
 	done
-	OPTIONS="$OPTIONS `build_option --batch \"$CFG_BATCH\" ignore`"
 	OPTIONS="$OPTIONS `build_option -M $CFG_IMAGE`"
 	OPTIONS="$OPTIONS `build_option -m $CFG_HEAP`"
 	#OPTIONS="$OPTIONS `build_option --stack-size $CFG_STACK`"
@@ -170,60 +239,6 @@ allowed_implementation() {
 		fi
 	done
 	echo $ALLOWED
-}
-
-print_version() {
-	echo
-	echo "runcl ($version)"
-}
-
-print_help() {
-	print_version
-
-	echo
-	echo "Usage:"
-	echo "  cl [options] [lispfile]"
-	echo
-	echo "Options:"
-	echo "  -h, --help         : Print this help"
-	echo "  -v, --version      : Print runcl version"
-	echo "  --clversion        : Run --version against the default CL"
-	echo "  -n, --norc         : Skip loading of user rc file"
-	echo "  -r, --rc <file>    : Load a specific RC file. Not portable"
-	echo "  -b, --batch        : Run in batch mode (quit after processing)" 
-	echo "  -i, --image <file> : Load a lisp image file"
-	echo "  --heap <bytes>     : Set lisp heap size"
-	echo "  --stack <bytes>    : Set lisp stack size"
-	echo "  -e, --eval <form>  : Eval a form (can be called multiple times)"
-	echo "  --no-rlwrap        : Turn off readline wrapper (on by default)"
-	echo "  -c, --impl <lisp>  : Specify a desired lisp type to load."
-	echo
-	echo "    Allowed implementations (ever-growing):"
-	echo "      $allowed_implementations"
-	echo
-	echo "~/.runcl variables:"
-	echo "  preferred  : Preferred lisp to load. Can be one of:"
-	echo "               $allowed_implementations"
-	echo "  CFG_RC     : If \"0\", will skip loading the rc file. Otherwise"
-	echo "               it will be loaded by default."
-	echo "  CFG_BATCH  : Default cl to batch mode (quit after running, no repl)."
-	echo "  CFG_IMAGE  : Image file to load by default."
-	echo "  CFG_HEAP   : Default heap size (bytes)."
-	echo "  CFG_STACK  : Default stack size (bytes)."
-	echo "  CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will"
-	echo "               start normally."
-	echo
-	echo "example ~/.runcl"
-	echo
-	echo "  preferred=ccl64"
-	echo "  CFG_RLWRAP="
-	echo 
-	echo
-	echo "Notes:"
-	echo " - any parameters after [lispfile] will be ignored (but printed out"
-	echo "   for your viewing/debugging pleasure)"
-	echo " - if the \"rlwrap\" program exists in your path, it will be used to"
-	echo "   load the lisp unless --no-rlwrap is given"
 }
 
 while test -n "$1"; do
