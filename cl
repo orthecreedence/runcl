@@ -17,23 +17,8 @@ version=0.0.1
 
 default_locations="/bin:/usr/bin:/usr/local/bin:/opt/bin"
 
-# TODO: allegro, lispworks, abcl
+# TODO: allegro, lispworks, abcl, etc
 allowed_implementations="sbcl ccl ccl64 clisp ecl"
-
-sbcl_locations="/usr/local/sbcl:/opt/sbcl"
-sbcl_exec="run-sbcl.sh sbcl"
-
-ccl_locations="/c/lisp/ccl:/usr/local/ccl:/opt/ccl"
-ccl_exec="wx86cl lx86cl ccl"
-
-ccl64_locations="/c/lisp/ccl:/usr/local/ccl:/opt/ccl"
-ccl64_exec="wx86cl64 lx86cl64 ccl"
-
-clisp_locations="/usr/local/clisp:/opt/clisp"
-clisp_exec="clisp"
-
-ecl_locations="/usr/local/ecl:/opt/ecl"
-ecl_exec="ecl"
 
 if [ "`uname -m`" == "x86_64" ]; then
 	is_64bit=1
@@ -113,6 +98,154 @@ print_help() {
 	echo "   load the lisp unless --no-rlwrap is given"
 }
 
+# build a list of implementations to search for
+search_implementations="$preferred sbcl"
+if [ "$is_64bit" == "1" ]; then
+	search_implementations="$search_implementations ccl64"
+else
+	search_implementations="$search_implementations ccl"
+fi
+search_implementations="$search_implementations ecl clisp"
+
+# Test if an implementation is in the allowed implementations list
+allowed_implementation() {
+	IMPL=$1
+	ALLOWED=no
+	for imp in $(echo $allowed_implementations | tr " " "\n"); do
+		if [ "$imp" == "$IMPL" ]; then
+			ALLOWED=yes
+			break;
+		fi
+	done
+	echo $ALLOWED
+}
+
+# Process the command line options. The first option we come to that doesn't
+# match on of the below is considered to be a [lispfile] arg. If arguments are
+# passed after [lispfile], the caller will be warned that they are ignored.
+while test -n "$1"; do
+    case "$1" in
+        --help|-h)
+            print_help
+			exit 0
+            ;;
+        --version|-v)
+			print_version
+			exit 0
+            ;;
+		--clversion)
+			CFG_VERSION=1
+			;;
+		--norc|-n)
+			CFG_RC=0
+			;;
+		--rc|-r)
+			CFG_RC=$2
+			shift
+			;;
+		--batch|-b)
+			CFG_BATCH=1
+			;;
+		--image|-i)
+			CFG_IMAGE=$2
+			shift
+			;;
+		--heap)
+			CFG_HEAP=$2
+			shift
+			;;
+		--stack)
+			CFG_STACK=$2
+			shift
+			;;
+		--eval|-e)
+			CFG_EVAL[${#CFG_EVAL[@]}]=$2
+			shift
+			;;
+		--no-rlwrap)
+			CFG_RLWRAP=0
+			;;
+		--impl|-cl)
+			if [ "`allowed_implementation $2`" != "yes" ]; then
+				echo "Bad implementation given. Must be one of:"
+				echo "  $allowed_implementations"
+				exit 1
+			fi
+
+			search_implementations="$2 $search_implementations"
+			shift
+			;;
+        *)
+			CFG_LOAD=$1
+			shift
+			if [ "$*" != "" ]; then
+				echo 
+				echo "  Note: ignoring args: \"$@\""
+				echo "    (they appear after the file \"$CFG_LOAD\")"
+				echo
+			fi
+			break;
+            ;;
+    esac
+    shift
+done
+
+
+# Look through all implementations we're searching through and find the first
+# one that's available to us via our search locations.
+find_implementation() {
+	OLDPATH=$PATH
+	impls=$(echo $search_implementations | tr " " "\n")
+	for impl in $impls; do
+		# don't fire blanks
+		if [ "$impl" == "" ]; then
+			continue;
+		fi
+		# check if implementation is allowed
+		if [ "`allowed_implementation $impl`" != "yes" ]; then
+			continue;
+		fi
+		impl_locations=$(eval "echo \$${impl}_locations")
+		impl_exec=$(eval "echo \$${impl}_exec | tr \" \" \"\\\n\"")
+		search_paths="$default_locations:${impl_locations}"
+		export PATH=$OLDPATH
+		export PATH="$search_paths:$PATH"
+		for exe in $impl_exec; do
+			CL_EXE=`which $exe 2> /dev/null`
+			if [ "$CL_EXE" != "" ]; then
+				break;
+			fi
+		done
+		if [ "$CL_EXE" != "" ]; then
+			break;
+		fi
+	done
+	export PATH=$OLDPATH
+
+	echo "$CL_EXE $impl"
+}
+
+# ------------------------------------------------------------------------------
+# Paths and executable names for each implementation
+# ------------------------------------------------------------------------------
+sbcl_locations="/usr/local/sbcl:/opt/sbcl"
+sbcl_exec="run-sbcl.sh sbcl"
+
+ccl_locations="/c/lisp/ccl:/usr/local/ccl:/opt/ccl"
+ccl_exec="wx86cl lx86cl ccl"
+
+ccl64_locations="/c/lisp/ccl:/usr/local/ccl:/opt/ccl"
+ccl64_exec="wx86cl64 lx86cl64 ccl"
+
+clisp_locations="/usr/local/clisp:/opt/clisp"
+clisp_exec="clisp"
+
+ecl_locations="/usr/local/ecl:/opt/ecl"
+ecl_exec="ecl"
+
+# ------------------------------------------------------------------------------
+# Implementation-specific command-line options builder functions
+# ------------------------------------------------------------------------------
 build_option() {
 	directive=$1
 	bare_directive=$(echo $directive | sed 's/-//g')
@@ -221,124 +354,16 @@ ecl_options() {
 	echo $OPTIONS
 }
 
-search_implementations="$preferred sbcl"
-if [ "$is_64bit" == "1" ]; then
-	search_implementations="$search_implementations ccl64"
-else
-	search_implementations="$search_implementations ccl"
-fi
-search_implementations="$search_implementations ecl clisp"
-
-allowed_implementation() {
-	IMPL=$1
-	ALLOWED=no
-	for imp in $(echo $allowed_implementations | tr " " "\n"); do
-		if [ "$imp" == "$IMPL" ]; then
-			ALLOWED=yes
-			break;
-		fi
-	done
-	echo $ALLOWED
-}
-
-while test -n "$1"; do
-    case "$1" in
-        --help|-h)
-            print_help
-			exit 0
-            ;;
-        --version|-v)
-			print_version
-			exit 0
-            ;;
-		--clversion)
-			CFG_VERSION=1
-			;;
-		--norc|-n)
-			CFG_RC=0
-			;;
-		--rc|-r)
-			CFG_RC=$2
-			shift
-			;;
-		--batch|-b)
-			CFG_BATCH=1
-			;;
-		--image|-i)
-			CFG_IMAGE=$2
-			shift
-			;;
-		--heap)
-			CFG_HEAP=$2
-			shift
-			;;
-		--stack)
-			CFG_STACK=$2
-			shift
-			;;
-		--eval|-e)
-			CFG_EVAL[${#CFG_EVAL[@]}]=$2
-			shift
-			;;
-		--no-rlwrap)
-			CFG_RLWRAP=0
-			;;
-		--impl|-cl)
-			if [ "`allowed_implementation $2`" != "yes" ]; then
-				echo "Bad implementation given. Must be one of:"
-				echo "  $allowed_implementations"
-				exit 1
-			fi
-
-			search_implementations="$2 $search_implementations"
-			shift
-			;;
-        *)
-			CFG_LOAD=$1
-			shift
-			if [ "$*" != "" ]; then
-				echo 
-				echo "  Note: ignoring args: \"$@\""
-				echo "    (they appear after the file \"$CFG_LOAD\")"
-				echo
-			fi
-			break;
-            ;;
-    esac
-    shift
-done
-
-
-find_implementation() {
-	OLDPATH=$PATH
-	impls=$(echo $search_implementations | tr " " "\n")
-	for impl in $impls; do
-		if [ "$impl" == "" ]; then
-			continue;
-		fi
-		impl_locations=$(eval "echo \$${impl}_locations")
-		impl_exec=$(eval "echo \$${impl}_exec | tr \" \" \"\\\n\"")
-		search_paths="$default_locations:${impl_locations}"
-		export PATH=$OLDPATH
-		export PATH="$search_paths:$PATH"
-		for exe in $impl_exec; do
-			CL_EXE=`which $exe 2> /dev/null`
-			if [ "$CL_EXE" != "" ]; then
-				break;
-			fi
-		done
-		if [ "$CL_EXE" != "" ]; then
-			break;
-		fi
-	done
-	export PATH=$OLDPATH
-
-	echo "$CL_EXE $impl"
-}
-
+# ------------------------------------------------------------------------------
+# Run the best-matching implementation
+# ------------------------------------------------------------------------------
+# find the most desired implementation and grab its executable path and the name
+# of the implementation
 IMPL=`find_implementation`
 CL_PATH=$(echo $IMPL | sed 's/ .*//')
 CL_NAME=$(echo $IMPL | sed 's/.* //')
+
+# Generate the options specific to this lisp
 CL_OPTIONS=`${CL_NAME}_options`
 
 CMD="$CL_PATH"
@@ -346,7 +371,9 @@ if [ "$CFG_RLWRAP" == "1" ] && [ "$RLWRAP" != "" ]; then
 	CMD="rlwrap $CMD"
 fi
 
+# Run the command we generated
 echo
 echo "Running: $CMD $CL_OPTIONS"
 echo
 eval "$CMD" $CL_OPTIONS
+
