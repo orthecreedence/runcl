@@ -27,7 +27,6 @@ Options:
   --heap <bytes>     : Set lisp heap size
   --stack <bytes>    : Set lisp stack size
   -e, --eval <form>  : Eval a form (can be called multiple times)
-  --no-rlwrap        : Turn off readline wrapper (on by default)
   -c, --impl <lisp>  : Specify a desired lisp type to load.
 
     Allowed implementations (ever-growing):
@@ -42,20 +41,15 @@ Options:
   CFG_IMAGE  : Image file to load by default.
   CFG_HEAP   : Default heap size (bytes).
   CFG_STACK  : Default stack size (bytes).
-  CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will
-               start normally.
 
 example ~/.runcl
 
   preferred=ccl64
-  CFG_RLWRAP=
 
 
 Notes:
  - any parameters after [lispfile] will be ignored (but printed out
    for your viewing/debugging pleasure)
- - if the "rlwrap" program exists in your path, it will be used to
-   load the lisp unless --no-rlwrap is given
 ```
 
 Examples
@@ -85,16 +79,14 @@ or not to load the rc file by default, etc:
     CFG_IMAGE  : Image file to load by default.
     CFG_HEAP   : Default heap size (bytes).
     CFG_STACK  : Default stack size (bytes).
-    CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will start normally.
 
 This is really just a simple bash script, so variables are set just like in
 bash:
 
-    preferred=ccl64
-	CFG_RLWRAP=
+    preferred=ccl64 sbcl
 
-This says "my preferred implementation is CCL 64-bit, and don't use the `rlwrap`
-command when starting."
+This says "my preferred implementation is CCL 64-bit, if tht isn't available,
+use SBCL."
 
 Implementations
 ---------------

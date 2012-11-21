@@ -28,13 +28,11 @@ fi
 
 # define our command-line options, the defaults of which can be overridden by
 # the .runcl file
-RLWRAP=`which rlwrapzzz 2> /dev/null`
 CFG_RC=
 CFG_BATCH=
 CFG_IMAGE=
 CFG_HEAP=
 CFG_STACK=
-CFG_RLWRAP=1
 # load the local config file
 if [ -f "$HOME/.runcl" ]; then
 	source $HOME/.runcl
@@ -67,7 +65,6 @@ print_help() {
 	echo "  --heap <bytes>     : Set lisp heap size"
 	echo "  --stack <bytes>    : Set lisp stack size"
 	echo "  -e, --eval <form>  : Eval a form (can be called multiple times)"
-	echo "  --no-rlwrap        : Turn off readline wrapper (on by default)"
 	echo "  -c, --impl <lisp>  : Specify a desired lisp type to load."
 	echo
 	echo "    Allowed implementations (ever-growing):"
@@ -82,20 +79,15 @@ print_help() {
 	echo "  CFG_IMAGE  : Image file to load by default."
 	echo "  CFG_HEAP   : Default heap size (bytes)."
 	echo "  CFG_STACK  : Default stack size (bytes)."
-	echo "  CFG_RLWRAP : If 1, will load rlwrap (if it exists), otherwise will"
-	echo "               start normally."
 	echo
 	echo "example ~/.runcl"
 	echo
 	echo "  preferred=ccl64"
-	echo "  CFG_RLWRAP="
 	echo 
 	echo
 	echo "Notes:"
 	echo " - any parameters after [lispfile] will be ignored (but printed out"
 	echo "   for your viewing/debugging pleasure)"
-	echo " - if the \"rlwrap\" program exists in your path, it will be used to"
-	echo "   load the lisp unless --no-rlwrap is given"
 }
 
 # build a list of implementations to search for
@@ -161,9 +153,6 @@ while test -n "$1"; do
 		--eval|-e)
 			CFG_EVAL[${#CFG_EVAL[@]}]=$2
 			shift
-			;;
-		--no-rlwrap)
-			CFG_RLWRAP=0
 			;;
 		--impl|-cl)
 			if [ "`allowed_implementation $2`" != "yes" ]; then
@@ -325,9 +314,6 @@ clisp_options() {
 	OPTIONS="$OPTIONS `build_option -M $CFG_IMAGE`"
 	OPTIONS="$OPTIONS `build_option -m $CFG_HEAP`"
 	#OPTIONS="$OPTIONS `build_option --stack-size $CFG_STACK`"
-	if [ "$CFG_RLWRAP" == "0" ]; then
-		OPTIONS="$OPTIONS -disable-readline "
-	fi
 
 	OPTIONS="$OPTIONS $clisp_extra_options"
 	if [ "$CFG_LOAD" != "" ]; then
@@ -367,9 +353,6 @@ CL_NAME=$(echo $IMPL | sed 's/.* //')
 CL_OPTIONS=`${CL_NAME}_options`
 
 CMD="$CL_PATH"
-if [ "$CFG_RLWRAP" == "1" ] && [ "$RLWRAP" != "" ]; then
-	CMD="rlwrap $CMD"
-fi
 
 # Run the command we generated
 echo
