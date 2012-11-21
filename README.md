@@ -36,7 +36,8 @@ The `~/.runcl` file is a simple configuration file that is sourced by runcl. It
 can tell runcl some useful things, such as what implementation to run, whether
 or not to load the rc file by default, etc:
 
-    preferred  : Preferred lisp to load. Can be one of: sbcl ccl ccl64 clisp ecl
+    preferred  : Preferred lisp(s). Loaded in the given order.
+	    Can be one or more of: sbcl ccl ccl64 clisp ecl
     CFG_RC     : If "0", will skip loading the rc file. Otherwise it will be loaded by default.
     CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
     CFG_IMAGE  : Image file to load by default.

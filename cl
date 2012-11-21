@@ -74,8 +74,8 @@ print_help() {
 	echo "      $allowed_implementations"
 	echo
 	echo "~/.runcl variables:"
-	echo "  preferred  : Preferred lisp to load. Can be one of:"
-	echo "               $allowed_implementations"
+	echo "  preferred  : Preferred lisp(s). Loaded in the given order."
+	echo "      Can be on or more of: $allowed_implementations"
 	echo "  CFG_RC     : If \"0\", will skip loading the rc file. Otherwise"
 	echo "               it will be loaded by default."
 	echo "  CFG_BATCH  : Default cl to batch mode (quit after running, no repl)."
