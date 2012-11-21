@@ -46,6 +46,7 @@ Options:
 example ~/.runcl
 
   preferred=ccl64
+  search=/opt/lisp/ccl:/home/andrew/ccl
 
 
 Notes:
