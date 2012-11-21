@@ -45,8 +45,14 @@ Options:
 
 example ~/.runcl
 
-  preferred=ccl64
-  search=/opt/lisp/ccl:/home/andrew/ccl
+  # 64-bit CCL is preferred, but if not available use SBCL
+  preferred=ccl64 sbcl
+
+  # search for lisps in /opt/lisp/ccl and /opt/lisp/sbcl
+  search=/opt/lisp/ccl:/opt/lisp/sbcl
+
+  # always run in batch mode (quit instead of returning to REPL)
+  CFG_BATCH=1
 
 
 Notes:

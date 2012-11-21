@@ -85,8 +85,14 @@ print_help() {
 	echo
 	echo "example ~/.runcl"
 	echo
-	echo "  preferred=ccl64"
-	echo "  search=/opt/lisp/ccl:/home/andrew/ccl"
+	echo "  # 64-bit CCL is preferred, but if not available use SBCL"
+	echo "  preferred=ccl64 sbcl"
+	echo
+	echo "  # search for lisps in /opt/lisp/ccl and /opt/lisp/sbcl"
+	echo "  search=/opt/lisp/ccl:/opt/lisp/sbcl"
+	echo
+	echo "  # always run in batch mode (quit instead of returning to REPL)"
+	echo "  CFG_BATCH=1"
 	echo 
 	echo
 	echo "Notes:"
