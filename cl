@@ -15,8 +15,6 @@
 
 version=0.0.1
 
-default_locations="/bin:/usr/bin:/usr/local/bin:/opt/bin"
-
 # TODO: allegro, lispworks, abcl, etc
 allowed_implementations="sbcl ccl ccl64 clisp ecl"
 
@@ -25,6 +23,8 @@ if [ "`uname -m`" == "x86_64" ]; then
 else
 	is_64bit=0
 fi
+
+search="/bin"
 
 # define our command-line options, the defaults of which can be overridden by
 # the .runcl file
@@ -41,6 +41,8 @@ fi
 CFG_LOAD=
 CFG_EVAL=()
 CFG_VERSION=
+
+default_locations="$search:/bin:/usr/bin:/usr/local/bin:/opt/bin"
 
 print_version() {
 	echo
@@ -73,6 +75,7 @@ print_help() {
 	echo "~/.runcl variables:"
 	echo "  preferred  : Preferred lisp(s). Loaded in the given order."
 	echo "      Can be on or more of: $allowed_implementations"
+	echo "  search     : Paths (\":\" delimited) to search for lisp implementations."
 	echo "  CFG_RC     : If \"0\", will skip loading the rc file. Otherwise"
 	echo "               it will be loaded by default."
 	echo "  CFG_BATCH  : Default cl to batch mode (quit after running, no repl)."
@@ -83,6 +86,7 @@ print_help() {
 	echo "example ~/.runcl"
 	echo
 	echo "  preferred=ccl64"
+	echo "  search=/opt/lisp/ccl:/home/andrew/ccl"
 	echo 
 	echo
 	echo "Notes:"

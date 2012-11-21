@@ -35,6 +35,7 @@ Options:
 ~/.runcl variables:
   preferred  : Preferred lisp(s). Loaded in the given order.
       Can be on or more of: sbcl ccl ccl64 clisp ecl
+  search     : Paths (":" delimited) to search for lisp implementations.
   CFG_RC     : If "0", will skip loading the rc file. Otherwise
                it will be loaded by default.
   CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
@@ -74,6 +75,7 @@ or not to load the rc file by default, etc:
 
     preferred  : Preferred lisp(s). Loaded in the given order.
 	    Can be one or more of: sbcl ccl ccl64 clisp ecl
+    search     : Paths (":" delimited) to search for lisp implementations.
     CFG_RC     : If "0", will skip loading the rc file. Otherwise it will be loaded by default.
     CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
     CFG_IMAGE  : Image file to load by default.
