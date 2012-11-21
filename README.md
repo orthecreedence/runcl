@@ -6,6 +6,13 @@ syntax to load/run lisp across platforms/implementations.
 
 It's currently supported on windows via cygwin (since it's a bash script).
 
+Use cl-launch
+=============
+So apparently someone else has already done what I'm doing and done it way
+better. Please use [cl-launch](http://www.cliki.net/CL-Launch) instead of runcl.
+
+Oops.
+
 Interface
 ---------
 Output from `--help`:
