@@ -6,12 +6,17 @@ syntax to load/run lisp across platforms/implementations.
 
 It's currently supported on windows via cygwin (since it's a bash script).
 
+I'm aware that [cl-launch](http://cliki.net/cl-launch) has some similar goals.
+runcl aims to be a very simple wrapper to instantiate your CL implementation.
+It does not handle script generation or saving of images or executables. It
+tries to do one thing well. If you need more options, use cl-launch.
+
 Interface
 ---------
 Output from `--help`:
 
 ```bash
-runcl (0.0.1)
+runcl (0.0.2)
 
 Usage:
   cl [options] [lispfile]
@@ -27,10 +32,16 @@ Options:
   --heap <bytes>     : Set lisp heap size
   --stack <bytes>    : Set lisp stack size
   -e, --eval <form>  : Eval a form (can be called multiple times)
-  -c, --impl <lisp>  : Specify a desired lisp type to load.
+  -cl, --impl <lisp> : Specify one or more desired lisps to load (space separated)
 
     Allowed implementations (ever-growing):
       sbcl ccl ccl64 clisp ecl
+
+Command line example:
+
+  # load Clozure CL 64bit (but SBCL if CCL isn't available), don't load the RC
+  # file, and run a format command in batch mode
+  cl -cl 'ccl64 sbcl' -n -b -e '(format t "hello~%")'
 
 ~/.runcl variables:
   preferred  : Preferred lisp(s). Loaded in the given order.

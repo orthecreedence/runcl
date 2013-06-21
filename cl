@@ -13,7 +13,7 @@
 # Author:   Andrew Lyon
 # License:  MIT
 
-version=0.0.1
+version=0.0.2
 
 # TODO: allegro, lispworks, abcl, etc
 allowed_implementations="sbcl ccl ccl64 clisp ecl"
@@ -67,10 +67,16 @@ print_help() {
 	echo "  --heap <bytes>     : Set lisp heap size"
 	echo "  --stack <bytes>    : Set lisp stack size"
 	echo "  -e, --eval <form>  : Eval a form (can be called multiple times)"
-	echo "  -c, --impl <lisp>  : Specify a desired lisp type to load."
+	echo "  -cl, --impl <lisp> : Specify a desired lisp type to load."
 	echo
 	echo "    Allowed implementations (ever-growing):"
 	echo "      $allowed_implementations"
+	echo
+	echo "Command line example:"
+	echo
+	echo "  # load Clozure CL 64bit (but SBCL if CCL isn't available), don't load the RC"
+	echo "  # file, and run a format command in batch mode"
+	echo "  cl -cl 'ccl64 sbcl' -n -b -e '(format t "hello~%")'"
 	echo
 	echo "~/.runcl variables:"
 	echo "  preferred  : Preferred lisp(s). Loaded in the given order."
