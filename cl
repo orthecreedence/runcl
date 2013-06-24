@@ -13,7 +13,7 @@
 # Author:   Andrew Lyon
 # License:  MIT
 
-version=0.0.2
+version=0.0.3
 
 # TODO: allegro, lispworks, abcl, etc
 allowed_implementations="sbcl ccl ccl64 clisp ecl"
@@ -33,6 +33,7 @@ CFG_BATCH=
 CFG_IMAGE=
 CFG_HEAP=
 CFG_STACK=
+CFG_RLWRAP=1
 # load the local config file
 if [ -f "$HOME/.runcl" ]; then
 	source $HOME/.runcl
@@ -66,8 +67,9 @@ print_help() {
 	echo "  -i, --image <file> : Load a lisp image file"
 	echo "  --heap <bytes>     : Set lisp heap size"
 	echo "  --stack <bytes>    : Set lisp stack size"
-	echo "  -e, --eval <form>  : Eval a form (can be called multiple times)"
-	echo "  -cl, --impl <lisp> : Specify a desired lisp type to load."
+	echo "  -e, --eval <form>  : Eval a lisp form (can be called multiple times)"
+	echo "  -cl, --impl <lisp> : Specify a desired lisp type to load, space delim"
+	echo "  -nw, --no-rlwrap   : Specify NOT to use rlwrap if it exists in the \$PATH"
 	echo
 	echo "    Allowed implementations (ever-growing):"
 	echo "      $allowed_implementations"
@@ -88,6 +90,7 @@ print_help() {
 	echo "  CFG_IMAGE  : Image file to load by default."
 	echo "  CFG_HEAP   : Default heap size (bytes)."
 	echo "  CFG_STACK  : Default stack size (bytes)."
+	echo "  CFG_RLWRAP : Whether or not to use rlwrap when running lisp (1 by default)."
 	echo
 	echo "example ~/.runcl"
 	echo
@@ -179,6 +182,9 @@ while test -n "$1"; do
 
 			search_implementations="$2 $search_implementations"
 			shift
+			;;
+		--no-rlwrap|-nw)
+			CFG_RLWRAP=0
 			;;
         *)
 			CFG_LOAD=$1
@@ -369,6 +375,10 @@ CL_NAME=$(echo $IMPL | sed 's/.* //')
 CL_OPTIONS=`${CL_NAME}_options`
 
 CMD="$CL_PATH"
+
+if [ "$CFG_RLWRAP" == "1" ] && [ "`which rlwrap 2> /dev/null`" != "" ] ; then
+	CMD="rlwrap $CMD"
+fi
 
 # Run the command we generated
 echo

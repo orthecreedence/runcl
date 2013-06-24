@@ -16,7 +16,7 @@ Interface
 Output from `--help`:
 
 ```bash
-runcl (0.0.2)
+runcl (0.0.3)
 
 Usage:
   cl [options] [lispfile]
@@ -31,8 +31,9 @@ Options:
   -i, --image <file> : Load a lisp image file
   --heap <bytes>     : Set lisp heap size
   --stack <bytes>    : Set lisp stack size
-  -e, --eval <form>  : Eval a form (can be called multiple times)
-  -cl, --impl <lisp> : Specify one or more desired lisps to load (space separated)
+  -e, --eval <form>  : Eval a lisp form (can be called multiple times)
+  -cl, --impl <lisp> : Specify a desired lisp type to load, space delim
+  -nw, --no-rlwrap   : Specify NOT to use rlwrap if it exists in the $PATH
 
     Allowed implementations (ever-growing):
       sbcl ccl ccl64 clisp ecl
@@ -41,7 +42,7 @@ Command line example:
 
   # load Clozure CL 64bit (but SBCL if CCL isn't available), don't load the RC
   # file, and run a format command in batch mode
-  cl -cl 'ccl64 sbcl' -n -b -e '(format t "hello~%")'
+  cl -cl 'ccl64 sbcl' -n -b -e '(format t hello~%)'
 
 ~/.runcl variables:
   preferred  : Preferred lisp(s). Loaded in the given order.
@@ -53,6 +54,7 @@ Command line example:
   CFG_IMAGE  : Image file to load by default.
   CFG_HEAP   : Default heap size (bytes).
   CFG_STACK  : Default stack size (bytes).
+  CFG_RLWRAP : Whether or not to use rlwrap when running lisp (1 by default).
 
 example ~/.runcl
 
@@ -99,6 +101,10 @@ or not to load the rc file by default, etc:
     CFG_IMAGE  : Image file to load by default.
     CFG_HEAP   : Default heap size (bytes).
     CFG_STACK  : Default stack size (bytes).
+    CFG_RLWRAP : Whether or not to use rlwrap when running lisp (1 by default).
+
+Note that `CFG\_RLWRAP` is on by default, but will not try to load rlwrap *unless
+it exists in `$PATH`*.
 
 This is really just a simple bash script, so variables are set just like in
 bash:
