@@ -93,26 +93,34 @@ The `~/.runcl` file is a simple configuration file that is sourced by runcl. It
 can tell runcl some useful things, such as what implementation to run, whether
 or not to load the rc file by default, etc:
 
-    preferred  : Preferred lisp(s). Loaded in the given order.
-	    Can be one or more of: sbcl ccl ccl64 clisp ecl
-    search     : Paths (":" delimited) to search for lisp implementations.
-    CFG_RC     : If "0", will skip loading the rc file. Otherwise it will be loaded by default.
-    CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
-    CFG_IMAGE  : Image file to load by default.
-    CFG_HEAP   : Default heap size (bytes).
-    CFG_STACK  : Default stack size (bytes).
-    CFG_RLWRAP : Whether or not to use rlwrap when running lisp (1 by default).
+```
+preferred  : Preferred lisp(s). Loaded in the given order.
+    Can be one or more of: sbcl ccl ccl64 clisp ecl
+search     : Paths (":" delimited) to search for lisp implementations.
+CFG_RC     : If "0", will skip loading the rc file. Otherwise it will be loaded by default.
+CFG_BATCH  : Default cl to batch mode (quit after running, no repl).
+CFG_IMAGE  : Image file to load by default.
+CFG_HEAP   : Default heap size (bytes).
+CFG_STACK  : Default stack size (bytes).
+CFG_RLWRAP : Whether or not to use rlwrap when running lisp (1 by default).
+```
 
-Note that `CFG\_RLWRAP` is on by default, but will not try to load rlwrap *unless
+Note that `CFG_RLWRAP` is on by default, but will not try to load rlwrap *unless
 it exists in `$PATH`*.
 
 This is really just a simple bash script, so variables are set just like in
-bash:
+bash. Here's a short example:
 
-    preferred=ccl64 sbcl
+```bash
+# if Clozure CL 64-bit is not available, use SBCL
+preferred=ccl64 sbcl
 
-This says "my preferred implementation is CCL 64-bit, if tht isn't available,
-use SBCL."
+# turn off rlwrap (even if it's in $PATH)
+CFG_RLWRAP=0
+
+# batch all operations (quit after running file/code)
+CFG_BATCH=1
+```
 
 Implementations
 ---------------
